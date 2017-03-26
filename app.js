@@ -1,62 +1,64 @@
-var wordCount = $('.js-word-count');
-var uniqueWords = $('.js-unique-word-count');
-var avgWords = $('.js-average-word-length');
+//Regex filter to return only words
+var onlyWords = function(text) {
+    return text.toLowerCase().match(/\w+/gi);
+};
 
-$('#submit').click(function() {
-    $('#text-report-gone').removeClass('hidden');
+//function to get only unique WORDS and amount
+var uniqueWordSize = function(words) {    
+    var results = [];
+    var allWords = {};
     
-    var words = $('#user-text').val();
-    var unique = new Set(words);    
-    var avg = words.length / words.split(' ').length;    
+    for(var i = 0; i < words.length; i++) {
+        if(!allWords[words[i]]) {
+            allWords[words[i]] = 1;
+        } else {
+            allWords[words[i]]++;
+        }
+    }
     
-    wordCount.prepend(words.length);
-    uniqueWords.prepend(unique.size);
-    avgWords.prepend(Math.round(avg));
+    for(var key in allWords) {
+        if(allWords[key] <= 1) {
+            results.push(key);
+        }
+    }
+    return results.length;
+};
+
+//function to get average word LENGTH
+var getMean = function(chars, words) {
+   return (chars / words).toPrecision(2);
+};
+
+//main function to traverse and render data
+var renderText = function(text) {
+    var words = onlyWords(text);    
+    var wordsCount = words.length;
+    var uniquesCount = uniqueWordSize(words);
+    var totalChars = words.join('').length;
+    var mean = getMean(totalChars, wordsCount);
+   
+    var resultsText = $('#text-report-gone');
+    var wordCount = $('.js-word-count');
+    var uniqueCount = $('.js-unique-word-count');
+    var avgCount = $('.js-average-word-length');
     
-    event.preventDefault();    
+    wordCount.append(wordsCount);
+    uniqueCount.prepend(uniquesCount);
+    avgCount.prepend(mean);
+    
+    resultsText.removeClass('hidden');
+};
+
+//button functionality
+var buttonRun = function() {    
+    $('#submit').click(function() {
+        event.preventDefault();
+        var data = $('#user-text').val();
+        renderText(data);
+    });    
+};
+
+//IIFE
+$(function() {
+    buttonRun();
 });
-
-
-//var getAverage = function(tokens) {
-//    var totalLength = tokens.join('').length;
-//    return (totalLength / tokens.length).toFixed(2);
-//};
-//
-//var countUnique = function(tokens) {
-//    var uniqueWords = new Set(tokens);
-//    return uniqueWords.size;
-//};
-//
-//var onlyChars = function(text) {
-//    return text.toLowerCase().match(/\b[^\s]+\b/g).sort();
-//};
-//
-//var removeReturns = function(text) {
-//    return text.replace(/\r?\n|\r/g, "");  
-//}
-//
-//var reportOnText = function(text) {
-//    var tokens = onlyChars(text);
-//    var numDistinctWords = countUnique(tokens);
-//    var numTotalWords = tokens.length;
-//    var average = getAverage(tokens);
-//    
-//    var textReport = $('.js-text-report');
-//    textReport.find('.js-word-count').text(numTotalWords);
-//    textReport.find('.js-unique-word-count').text(numDistinctWords);
-//    textReport.find('.js-average-word-length').text(`${average} characters`);
-//    
-//    textReport.removeClass('hidden');
-//};
-//
-//var watchSend = function() {
-//    $('.js-text-form').submit(function(event) {
-//      event.preventDefault();
-//      var userText = $(this).find('#user-text').val();
-//        reportOnText(removeReturns(userText));
-//    });    
-//};
-//
-//$(function() {
-//    watchSend();
-//});
